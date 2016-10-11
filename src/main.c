@@ -115,12 +115,12 @@ void adc_init (void)
 
 		}
 
-	ADC_SoftwareStartConv(ADC1);
+	ADC_SoftwareStartConv (ADC1);
 }
 
 uint32_t SysUpTime = 0;
 
-void led_setup()
+void led_setup ()
 {
 	RCC_AHBPeriphClockCmd (RCC_AHBPeriph_GPIOA, ENABLE);
 
@@ -152,46 +152,44 @@ int main (void)
 	SystemCoreClockUpdate ();
 	SysTick_Config (SystemCoreClock / 1000);
 
-	led_setup();
-	adc_init();
+	led_setup ();
+	adc_init ();
 	uint32_t blinkInterval = 500;
 	uint32_t blinkLastTime = 0;
 
 	uint16_t AD_value;
 
-
 	/* Infinite loop */
 	while (1)
 		{
 
-
-			if(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC))
+			if (ADC_GetFlagStatus (ADC1, ADC_FLAG_EOC))
 				{
-						AD_value = ADC_GetConversionValue(ADC1);
-						ADC_SoftwareStartConv(ADC1);
+					AD_value = ADC_GetConversionValue (ADC1);
+					ADC_SoftwareStartConv (ADC1);
 
-						if (AD_value < 2460)
-							{
-								blinkInterval = 62;
-							}
-						else if (AD_value < 3185)
-							{
-								blinkInterval = 125;
-							}
-						else if (AD_value < 3560)
-							{
-								blinkInterval = 250;
-							}
-						else if (AD_value < 3800)
-							{
-								blinkInterval = 500;
-							}
+					if (AD_value < 2460)
+						{
+							blinkInterval = 62;
+						}
+					else if (AD_value < 3185)
+						{
+							blinkInterval = 125;
+						}
+					else if (AD_value < 3560)
+						{
+							blinkInterval = 250;
+						}
+					else if (AD_value < 3800)
+						{
+							blinkInterval = 500;
+						}
 
 				}
 			if (SysUpTime - (blinkLastTime + blinkInterval) < 65536)
 				{
 					blinkLastTime = SysUpTime;
-						GPIOA->ODR ^= (uint16_t) (1 << 5);
+					GPIOA->ODR ^= (uint16_t) (1 << 5);
 
 				}
 		}
