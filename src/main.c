@@ -114,6 +114,8 @@ void adc_init (void)
 		{
 
 		}
+
+	ADC_SoftwareStartConv(ADC1);
 }
 
 uint32_t SysUpTime = 0;
@@ -124,7 +126,7 @@ void led_setup()
 
 	GPIOA->MODER |= 0x1 << (5 * 2);
 	GPIOA->OSPEEDR |= 0x3 << (5 * 2);
-	GPIOA->BSRRL = 1 << 5;
+	//GPIOA->BSRRL = 1 << 5;
 }
 
 int main (void)
@@ -152,28 +154,46 @@ int main (void)
 
 	led_setup();
 	adc_init();
+	uint32_t blinkInterval = 500;
+	uint32_t blinkLastTime = 0;
 
-	volatile uint16_t AD_value;
+	uint16_t AD_value;
 
 
 	/* Infinite loop */
 	while (1)
 		{
-			ADC_SoftwareStartConv(ADC1);
 
-			while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)){}
 
-			AD_value = ADC_GetConversionValue(ADC1);
-			/*
-			if (SysUpTime - blinkNextTime < 65536)
+			if(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC))
 				{
-					blinkNextTime += 500;
-					if (blinking)
-						{
-							GPIOA->ODR ^= (uint16_t) (1 << 5);
-						}
+						AD_value = ADC_GetConversionValue(ADC1);
+						ADC_SoftwareStartConv(ADC1);
 
-				}*/
+						if (AD_value < 2460)
+							{
+								blinkInterval = 62;
+							}
+						else if (AD_value < 3185)
+							{
+								blinkInterval = 125;
+							}
+						else if (AD_value < 3560)
+							{
+								blinkInterval = 250;
+							}
+						else if (AD_value < 3800)
+							{
+								blinkInterval = 500;
+							}
+
+				}
+			if (SysUpTime - (blinkLastTime + blinkInterval) < 65536)
+				{
+					blinkLastTime = SysUpTime;
+						GPIOA->ODR ^= (uint16_t) (1 << 5);
+
+				}
 		}
 	return 0;
 }
